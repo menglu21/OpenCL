@@ -1,1 +1,9 @@
+Install OpenCL on Archlinux
+** build Opencl in arch **
+follow https://wiki.archlinux.org/index.php/GPGPU#OpenCL
 
+1. sudo pacman -S opencl-mesa(mesa 有问题，换成yaourt -S opencl-amd解决问题)
+2. sudo pacman -S ocl-icd
+3. sudo pacman -S opencl-headers
+4. yaourt -S amdapp-sdk, during installation, there is issue while downloading AMD-APP-SDKInstaller-v3.0.130.136-GA-linux64.tar.bz2, so directly dowmload it from https://archive.org/download/AMDAPPSDK/ and put it under https://melu.web.cern.ch/melu/ (/eos/user/m/melu/www/), then modify the PKGBUILD, change the directory of AMD-APP-SDKInstaller-v3.0.130.136-GA-linux64.tar.bz2 to https://melu.web.cern.ch/melu/
+5. sudo pacman -S clinfo
