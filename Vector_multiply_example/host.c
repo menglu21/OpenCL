@@ -253,4 +253,6 @@ int main()
 		free(C);
 	free(platforms);
 	free(devices);
+
+	return 0;
 }
