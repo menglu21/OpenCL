@@ -1,4 +1,4 @@
-✔︎ g++ -o host.o -c host_copy.c  -I$AMDAPPSDKROOT/include
+✔︎ g++ -o host.o -c host.c  -I$AMDAPPSDKROOT/include
 host_copy.c: In function ‘int convertToString(const char*, std::string&)’:
 host_copy.c:27:11: warning: converting to non-pointer type ‘int’ from NULL [-Wconversion-null]
    27 |    return NULL;
