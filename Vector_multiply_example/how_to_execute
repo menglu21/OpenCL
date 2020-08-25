@@ -1,0 +1,36 @@
+✔︎ g++ -o host.o -c host_copy.c  -I$AMDAPPSDKROOT/include
+host_copy.c: In function ‘int convertToString(const char*, std::string&)’:
+host_copy.c:27:11: warning: converting to non-pointer type ‘int’ from NULL [-Wconversion-null]
+   27 |    return NULL;
+      |           ^~~~
+host_copy.c: In function ‘int main()’:
+host_copy.c:89:93: warning: ‘_cl_command_queue* clCreateCommandQueue(cl_context, cl_device_id, cl_command_queue_properties, cl_int*)’ is deprecated [-Wdeprecated-declarations]
+   89 |  commandQueue = clCreateCommandQueue(context, devices[0], CL_QUEUE_PROFILING_ENABLE, &status);
+      |                                                                                             ^
+In file included from host_copy.c:1:
+/opt/AMDAPP/SDK/include/CL/cl.h:1359:1: note: declared here
+ 1359 | clCreateCommandQueue(cl_context                     /* context */,
+      | ^~~~~~~~~~~~~~~~~~~~
+✔︎ g++ -o host host.o -lOpenCL -L$AMDAPPSDKROOT/lib/
+✔︎ ./host 
+执行时间为:787028
+
+Array A:
+1.000	2.000	3.000	4.000	5.000	6.000	
+7.000	8.000	9.000	10.000	11.000	12.000	
+13.000	14.000	15.000	16.000	17.000	18.000	
+19.000	20.000	21.000	22.000	23.000	24.000	
+
+Array B:
+1.000	2.000	3.000	4.000	5.000	
+6.000	7.000	8.000	9.000	10.000	
+11.000	12.000	13.000	14.000	15.000	
+16.000	17.000	18.000	19.000	20.000	
+21.000	22.000	23.000	24.000	25.000	
+26.000	27.000	28.000	29.000	30.000	
+
+Array C:
+371.000	392.000	413.000	434.000	455.000	
+857.000	914.000	971.000	1028.000	1085.000	
+1343.000	1436.000	1529.000	1622.000	1715.000	
+1829.000	1958.000	2087.000	2216.000	2345.000
