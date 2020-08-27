@@ -1,0 +1,29 @@
+build: g++ -o rotate.o -c rotate.c  -I$AMDAPPSDKROOT/include -I/usr/include/opencv4
+link: g++ -o rotate rotate.o -L$AMDAPPSDKROOT/lib -lOpenCL -lopencv_core -lopencv_highgui -lopencv_imgcodecs
+
+
+-I/usr/include/opencv4 is necessary to avoid error: 
+
+/usr/include/opencv4/opencv2/opencv.hpp:48:10: fatal error: opencv2/opencv_modules.hpp: No such file or directory
+   48 | #include "opencv2/opencv_modules.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+
+✗ g++ -o rotate rotate.o -L$AMDAPPSDKROOT/lib -lOpenCL -lopencv_core:
+
+/usr/bin/ld: rotate.o: in function `main':
+rotate.c:(.text+0x3e5): undefined reference to `cv::imread(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int)'
+/usr/bin/ld: rotate.c:(.text+0x106a): undefined reference to `cv::imwrite(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cv::_InputArray const&, std::vector<int, std::allocator<int> > const&)'
+/usr/bin/ld: rotate.c:(.text+0x1113): undefined reference to `cv::imshow(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cv::_InputArray const&)'
+/usr/bin/ld: rotate.c:(.text+0x114a): undefined reference to `cv::waitKey(int)'
+collect2: error: ld returned 1 exit status
+
+✗ g++ -o rotate rotate.o -L$AMDAPPSDKROOT/lib -lOpenCL -lopencv_core -lopencv_highgui:
+
+/usr/bin/ld: rotate.o: in function `main':
+rotate.c:(.text+0x3e5): undefined reference to `cv::imread(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int)'
+/usr/bin/ld: rotate.c:(.text+0x106a): undefined reference to `cv::imwrite(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cv::_InputArray const&, std::vector<int, std::allocator<int> > const&)'
+collect2: error: ld returned 1 exit status
+
+✗ g++ -o rotate rotate.o -L$AMDAPPSDKROOT/lib -lOpenCL -lopencv_core -lopencv_highgui -lopencv_imgcodecs
+✗ link successfully
