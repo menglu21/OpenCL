@@ -68,7 +68,7 @@ int main()
 	};
 
 	// 图片相关        
-	Mat image = imread("./aaa.jpg");// 读取图片，OpenCV 自动识别文件类型，返回一个 Mat 类
+	Mat image = imread("./lll.jpg");// 读取图片，OpenCV 自动识别文件类型，返回一个 Mat 类
 	Mat channel[3];// 分别存放图像的三个通道
 	split(image, channel); // 将原图像拆分为三个通道，分别为蓝色、绿色、红色
 	size_t imageHeight = image.rows, imageWidth = image.cols;// 获取图像的行数和列数
@@ -191,7 +191,7 @@ int main()
 	}
 
 	merge(channel, 3, image);                                          // 三个通道合成
-	imwrite("./aaa_out.bmp", image, vector<int>{IMWRITE_JPEG_QUALITY, 95});// 最后一个参数为输出图片的选项，95%质量
+	imwrite("./lll_out.bmp", image, vector<int>{IMWRITE_JPEG_QUALITY, 95});// 最后一个参数为输出图片的选项，95%质量
 	imshow("merge", image);                                            // 在窗口中展示图片
 	waitKey(0);                                                        // 等待键盘输入
 
