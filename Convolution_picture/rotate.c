@@ -68,7 +68,7 @@ int main()
 	};
 
 	// 图片相关        
-	Mat image = imread("./lll.jpg");// 读取图片，OpenCV 自动识别文件类型，返回一个 Mat 类
+	Mat image = imread("./bb.jpg");// 读取图片，OpenCV 自动识别文件类型，返回一个 Mat 类
 	Mat channel[3];// 分别存放图像的三个通道
 	split(image, channel); // 将原图像拆分为三个通道，分别为蓝色、绿色、红色
 	size_t imageHeight = image.rows, imageWidth = image.cols;// 获取图像的行数和列数
@@ -94,7 +94,19 @@ int main()
 	commandQueue = clCreateCommandQueue(context, devices[0], CL_QUEUE_PROFILING_ENABLE, &status);
 	if (commandQueue == NULL) perror("Failed to create commandQueue for device 0.");
 
-	// 设置 image 数据描述符
+	// 设置 image 数据描述符,https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/cl_image_desc.html
+	//typedef struct _cl_image_desc {
+	//	cl_mem_object_type image_type;
+	//	size_t image_width;
+	//	size_t image_height;
+	//	size_t image_depth;
+	//	size_t image_array_size;
+	//	size_t image_row_pitch;
+	//	size_t image_slice_pitch;
+	//	cl_uint num_mip_levels;
+	//	cl_uint num_samples;
+	//	cl_mem buffer;
+	//} cl_image_desc;
 	cl_image_desc desc;
 	desc.image_type = CL_MEM_OBJECT_IMAGE2D;
 	desc.image_width = imageWidth;
@@ -107,9 +119,22 @@ int main()
 	desc.num_samples = 0;
 	desc.buffer = NULL;
 
+	//https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/cl_image_format.html
+	//typedef struct _cl_image_format {
+        //  cl_channel_order image_channel_order;
+        //  cl_channel_type image_channel_data_type;
+	//} cl_image_format;
 	cl_image_format format;
 	format.image_channel_order = CL_R;
 	format.image_channel_data_type = CL_FLOAT;
+
+	//https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/clCreateImage.html
+	//cl_mem clCreateImage (	cl_context context,
+	// 	cl_mem_flags flags,
+	// 	const cl_image_format *image_format,
+	// 	const cl_image_desc *image_desc,
+	// 	void *host_ptr,
+	// 	cl_int *errcode_ret)
 	cl_mem d_inputImage = clCreateImage(context, CL_MEM_READ_ONLY, &format, &desc, NULL, &status);
 	cl_mem d_outputImage = clCreateImage(context, CL_MEM_WRITE_ONLY, &format, &desc, NULL, &status);
 
@@ -122,6 +147,12 @@ int main()
 	clEnqueueWriteBuffer(commandQueue, d_filter, CL_TRUE, 0, filterSize * sizeof(float), filter, 0, NULL, NULL);
 
 	// 创建采样器，规定图像坐标系的类型和访问越界时的解决方案，以及插值方式
+	//https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/clCreateSampler.html,
+	//cl_sampler clCreateSampler (	cl_context context,
+	// 	cl_bool normalized_coords,//图像坐标是否要归一化
+	// 	cl_addressing_mode addressing_mode,//图像越界时的处理方案
+	// 	cl_filter_mode filter_mode,//Specifies the type of filter that must be applied when reading an image. This can be CL_FILTER_NEAREST or CL_FILTER_LINEAR.即访问值落在多个坐标之间的时候，取最近值或者用差值法
+	// 	cl_int *errcode_ret)
 	cl_sampler sampler = clCreateSampler(context, CL_FALSE, CL_ADDRESS_CLAMP_TO_EDGE, CL_FILTER_NEAREST, &status);
 
 
@@ -179,19 +210,35 @@ int main()
 		// 更新输入缓冲区
 		for (j = 0; j < imageHeight * imageWidth; j++)
 			imageData[j] = (float)channel[i].data[j];        
+
+		//https://www.khronos.org/registry/OpenCL/sdk/1.1/docs/man/xhtml/clEnqueueWriteImage.html
+		//cl_int clEnqueueWriteImage (	cl_command_queue command_queue,
+		// 	cl_mem image,
+		// 	cl_bool blocking_write,
+		// 	const size_t origin[3],  //Defines the (x, y, z) offset in pixels in the image from where to write. If image is a 2D image object, the z value given by origin[2] must be 0.
+		// 	const size_t region[3],  //Defines the (width, height, depth) in pixels of the 2D or 3D rectangle being written. If image is a 2D image object, the depth value given by region[2] must be 1.
+		// 	size_t input_row_pitch,
+		// 	size_t input_slice_pitch,
+		// 	const void * ptr,  //The pointer to a buffer in host memory where image data is to be read from
+		// 	cl_uint num_events_in_wait_list,
+		// 	const cl_event *event_wait_list,
+		// 	cl_event *event)
 		clEnqueueWriteImage(commandQueue, d_inputImage, CL_TRUE, origin, region, 0, 0, imageData, 0, NULL, NULL); 
 
 		// 执行内核
 		clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, globalSize, NULL, 0, NULL, &prof_event);
 
 		// 向文件中写入结果
+		//https://www.khronos.org/registry/OpenCL/sdk/1.1/docs/man/xhtml/clEnqueueReadImage.html
+		//与clEnqueueWriteImage类似，不同的在于
+		//	void *ptr, //The pointer to a buffer in host memory where image data is to be written to.
 		clEnqueueReadImage(commandQueue, d_outputImage, CL_TRUE, origin, region, 0, 0, imageData, 0, NULL, NULL);
 		for (j = 0; j < imageHeight * imageWidth; j++)
 			channel[i].data[j] = (imageData[j] < 0 ? 0 : (unsigned char)int(imageData[j]));
 	}
 
 	merge(channel, 3, image);                                          // 三个通道合成
-	imwrite("./lll_out.bmp", image, vector<int>{IMWRITE_JPEG_QUALITY, 95});// 最后一个参数为输出图片的选项，95%质量
+	imwrite("./bb_out.jpg", image, vector<int>{IMWRITE_JPEG_QUALITY, 95});// 最后一个参数为输出图片的选项，95%质量
 	imshow("merge", image);                                            // 在窗口中展示图片
 	waitKey(0);                                                        // 等待键盘输入
 
